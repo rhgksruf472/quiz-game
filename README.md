@@ -147,3 +147,4 @@ quiz-game/
 - 기능 단위로 커밋하고, 커밋 메시지에 작업 내용을 드러내는 접두사를 붙였습니다: `Feat:`(기능), `Fix:`(수정), `Refactor:`(구조 정리), `Docs:`(문서), `Chore:`(설정).
 - 퀴즈 풀기 기능은 `feature/play-quiz` 브랜치에서 작업한 뒤 `main`에 병합(`git merge --no-ff`)해서 브랜치 이력이 남도록 했습니다.
 - 이력 확인: `git log --oneline --graph`
+- 개발 완료 후 별도 폴더에 저장소를 `git clone`하고, 복제본에서 수정·push한 내용을 원래 작업 폴더에서 `git pull`로 가져오는 실습을 했습니다.

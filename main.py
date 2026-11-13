@@ -86,15 +86,49 @@ def read_int(prompt, low, high):
         return number                            # 모든 검사를 통과하면 값을 돌려주고 함수를 끝낸다
 
 
+# 퀴즈를 순서대로 출제하고 결과(점수)를 돌려주는 함수
+# quizzes: Quiz 객체가 담긴 리스트 (매개변수)
+def play_quiz(quizzes):
+    if len(quizzes) == 0:                        # 퀴즈가 하나도 없으면
+        print("⚠️ 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가하세요.")
+        return None                              # 점수 없음. 값 없이 함수를 끝낸다
+
+    print(f"\n📝 퀴즈를 시작합니다! (총 {len(quizzes)}문제)")
+    correct_count = 0                            # 맞힌 개수를 세는 변수. 0에서 시작한다
+
+    # for: 정해진 횟수(퀴즈 개수)만큼 반복한다. enumerate로 문제 번호도 같이 받는다
+    for index, quiz in enumerate(quizzes, start=1):
+        print("-" * 40)
+        print(f"[문제 {index}]")
+        quiz.display()                           # Quiz 객체의 메서드로 문제를 출력한다
+        user_answer = read_int("정답 입력: ", 1, 4)   # 1~4만 받는다. 잘못 쓰면 다시 묻는다
+
+        if quiz.is_correct(user_answer):         # Quiz 객체의 메서드로 정답 확인
+            print("✅ 정답입니다!")
+            correct_count += 1                   # 맞혔으면 1 증가
+        else:
+            print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.")
+
+    total = len(quizzes)
+    score = correct_count * 100 // total         # 100점 만점 점수. //는 소수점 버리는 나눗셈이다
+    print("=" * 40)
+    print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+    print("=" * 40)
+    return score                                 # 점수를 돌려준다 (S7에서 최고 점수 비교에 쓴다)
+
+
+
 # 프로그램 전체 흐름을 담당하는 함수
 def main():
+    quizzes = create_default_quizzes()   # 기본 퀴즈 리스트를 만들어 변수에 담아 둔다
+
     try:                                         # Ctrl+C나 입력 끊김이 생겨도 이 안에서 처리한다
         while True:
             show_menu()
             choice = read_int("선택: ", 1, 5)    # 이제 choice는 글자가 아니라 숫자(int)다
 
             if choice == 1:                      # 숫자이므로 따옴표 없이 비교한다
-                print("퀴즈 풀기는 아직 준비 중입니다.")
+                play_quiz(quizzes)
             elif choice == 2:
                 print("퀴즈 추가는 아직 준비 중입니다.")
             elif choice == 3:

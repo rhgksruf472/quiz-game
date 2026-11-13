@@ -1,15 +1,3 @@
-# 메뉴 화면을 출력하는 함수. 값을 돌려주지 않고 화면에 보여주기만 한다
-def show_menu():
-    print("=" * 40)                 # "=" 문자를 40번 반복해서 구분선을 만든다
-    print("        🎯 나만의 퀴즈 게임 🎯")
-    print("=" * 40)
-    print("1. 퀴즈 풀기")
-    print("2. 퀴즈 추가")
-    print("3. 퀴즈 목록")
-    print("4. 점수 확인")
-    print("5. 종료")
-    print("=" * 40)
-
 # 퀴즈 한 문제를 표현하는 클래스 (설계도)
 class Quiz:
     # 객체가 만들어질 때 자동 실행된다. self는 만들어지는 객체 자신이다
@@ -86,37 +74,6 @@ def read_int(prompt, low, high):
         return number                            # 모든 검사를 통과하면 값을 돌려주고 함수를 끝낸다
 
 
-# 퀴즈를 순서대로 출제하고 결과(점수)를 돌려주는 함수
-# quizzes: Quiz 객체가 담긴 리스트 (매개변수)
-def play_quiz(quizzes):
-    if len(quizzes) == 0:                        # 퀴즈가 하나도 없으면
-        print("⚠️ 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가하세요.")
-        return None                              # 점수 없음. 값 없이 함수를 끝낸다
-
-    print(f"\n📝 퀴즈를 시작합니다! (총 {len(quizzes)}문제)")
-    correct_count = 0                            # 맞힌 개수를 세는 변수. 0에서 시작한다
-
-    # for: 정해진 횟수(퀴즈 개수)만큼 반복한다. enumerate로 문제 번호도 같이 받는다
-    for index, quiz in enumerate(quizzes, start=1):
-        print("-" * 40)
-        print(f"[문제 {index}]")
-        quiz.display()                           # Quiz 객체의 메서드로 문제를 출력한다
-        user_answer = read_int("정답 입력: ", 1, 4)   # 1~4만 받는다. 잘못 쓰면 다시 묻는다
-
-        if quiz.is_correct(user_answer):         # Quiz 객체의 메서드로 정답 확인
-            print("✅ 정답입니다!")
-            correct_count += 1                   # 맞혔으면 1 증가
-        else:
-            print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.")
-
-    total = len(quizzes)
-    score = correct_count * 100 // total         # 100점 만점 점수. //는 소수점 버리는 나눗셈이다
-    print("=" * 40)
-    print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
-    print("=" * 40)
-    return score                                 # 점수를 돌려준다 (S7에서 최고 점수 비교에 쓴다)
-
-
 # 빈 입력을 막고, 글자를 올바르게 입력받을 때까지 반복해서 묻는 함수
 def read_text(prompt):
     while True:
@@ -127,73 +84,111 @@ def read_text(prompt):
         return text                              # 내용이 있으면 돌려준다
 
 
-# 사용자에게 문제, 선택지 4개, 정답 번호를 입력받아 퀴즈를 추가하는 함수
-def add_quiz(quizzes):
-    print("\n📌 새로운 퀴즈를 추가합니다.")
-    question = read_text("문제를 입력하세요: ")
+# 게임 전체를 관리하는 클래스. 퀴즈 목록·최고 점수를 속성으로 갖고, 기능을 메서드로 나눈다
+class QuizGame:
+    # 게임 객체가 만들어질 때 자동 실행된다
+    def __init__(self):
+        self.quizzes = create_default_quizzes()   # 속성: 퀴즈 목록
+        self.best_score = None                    # 속성: 최고 점수 (아직 안 풀었으면 None)
 
-    choices = []                                 # 선택지를 담을 빈 리스트
-    for number in range(1, 5):                   # 1, 2, 3, 4를 차례로 돌며 4번 반복한다
-        choice = read_text(f"선택지 {number}: ")
-        choices.append(choice)                   # 리스트 끝에 선택지를 붙인다
+    # 메뉴 화면을 보여주는 메서드
+    def show_menu(self):
+        print("=" * 40)
+        print("        🎯 나만의 퀴즈 게임 🎯")
+        print("=" * 40)
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print("=" * 40)
 
-    answer = read_int("정답 번호 (1-4): ", 1, 4)  # 1~4 숫자만 받는다 (read_int 재사용)
+    # 퀴즈를 순서대로 출제하는 메서드. 끝나면 최고 점수도 갱신한다
+    def play(self):
+        if len(self.quizzes) == 0:                # 퀴즈가 없으면 안내하고 끝낸다
+            print("⚠️ 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가하세요.")
+            return
 
-    new_quiz = Quiz(question, choices, answer)   # 입력받은 값으로 Quiz 객체를 만든다
-    quizzes.append(new_quiz)                     # 퀴즈 리스트 끝에 추가한다
-    print("✅ 퀴즈가 추가되었습니다!")
+        print(f"\n📝 퀴즈를 시작합니다! (총 {len(self.quizzes)}문제)")
+        correct_count = 0                         # 맞힌 개수
+
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print("-" * 40)
+            print(f"[문제 {index}]")
+            quiz.display()
+            user_answer = read_int("정답 입력: ", 1, 4)
+            if quiz.is_correct(user_answer):
+                print("✅ 정답입니다!")
+                correct_count += 1
+            else:
+                print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.")
+
+        total = len(self.quizzes)
+        score = correct_count * 100 // total      # 100점 만점 점수
+        print("=" * 40)
+        print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        print("=" * 40)
+
+        if self.best_score is None or score > self.best_score:   # 최고 점수 비교·갱신
+            self.best_score = score
+            print("🎉 새로운 최고 점수입니다!")
+
+    # 새 퀴즈를 입력받아 목록에 추가하는 메서드
+    def add(self):
+        print("\n📌 새로운 퀴즈를 추가합니다.")
+        question = read_text("문제를 입력하세요: ")
+        choices = []
+        for number in range(1, 5):
+            choices.append(read_text(f"선택지 {number}: "))
+        answer = read_int("정답 번호 (1-4): ", 1, 4)
+        self.quizzes.append(Quiz(question, choices, answer))
+        print("✅ 퀴즈가 추가되었습니다!")
+
+    # 퀴즈 목록을 보여주는 메서드
+    def show_list(self):
+        if len(self.quizzes) == 0:
+            print("⚠️ 등록된 퀴즈가 없습니다.")
+            return
+
+        print(f"\n📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)")
+        print("-" * 40)
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{index}] {quiz.question}")
+        print("-" * 40)
+
+    # 최고 점수를 보여주는 메서드
+    def show_score(self):
+        if self.best_score is None:
+            print("⚠️ 아직 퀴즈를 풀지 않았습니다.")
+        else:
+            print(f"\n🏆 최고 점수: {self.best_score}점")
+
+    # 게임을 실행하는 메서드. 메뉴를 반복하며 선택에 맞는 메서드를 부른다
+    def run(self):
+        try:                                      # Ctrl+C·입력 끊김이 생겨도 이 안에서 처리한다
+            while True:
+                self.show_menu()
+                choice = read_int("선택: ", 1, 5)
+
+                if choice == 1:
+                    self.play()
+                elif choice == 2:
+                    self.add()
+                elif choice == 3:
+                    self.show_list()
+                elif choice == 4:
+                    self.show_score()
+                elif choice == 5:
+                    print("게임을 종료합니다. 안녕히 가세요!")
+                    break
+        except (KeyboardInterrupt, EOFError):
+            print("\n\n입력이 중단되어 안전하게 종료합니다.")
 
 
-# 등록된 퀴즈의 문제를 번호와 함께 목록으로 보여주는 함수
-def list_quizzes(quizzes):
-    if len(quizzes) == 0:                        # 퀴즈가 없는 경우
-        print("⚠️ 등록된 퀴즈가 없습니다.")
-        return                                   # 값 없이 함수를 끝낸다
-
-    print(f"\n📋 등록된 퀴즈 목록 (총 {len(quizzes)}개)")
-    print("-" * 40)
-    for index, quiz in enumerate(quizzes, start=1):   # 번호는 1부터 센다
-        print(f"[{index}] {quiz.question}")
-    print("-" * 40)
-
-
-# 최고 점수를 보여주는 함수. best_score가 None이면 아직 안 푼 것이다
-def show_best_score(best_score):
-    if best_score is None:                       # 한 번도 풀지 않은 경우
-        print("⚠️ 아직 퀴즈를 풀지 않았습니다.")
-    else:
-        print(f"\n🏆 최고 점수: {best_score}점")
-
-
-
-# 프로그램 전체 흐름을 담당하는 함수
+# 프로그램의 시작점. 게임 객체를 만들어 실행한다
 def main():
-    quizzes = create_default_quizzes()   # 기본 퀴즈 리스트를 만들어 변수에 담아 둔다
-    best_score = None                            # 최고 점수를 저장할 변수
-
-    try:                                         # Ctrl+C나 입력 끊김이 생겨도 이 안에서 처리한다
-        while True:
-            show_menu()
-            choice = read_int("선택: ", 1, 5)    # 이제 choice는 글자가 아니라 숫자(int)다
-
-            if choice == 1:                      # 숫자이므로 따옴표 없이 비교한다
-                score = play_quiz(quizzes)           # 풀이 결과 점수를 받는다 (퀴즈가 없었으면 None)
-                if score is not None:                # 점수가 있을 때만 비교한다
-                    if best_score is None or score > best_score:   # 첫 점수이거나 최고 점수보다 높으면
-                        best_score = score           # 최고 점수를 갱신한다
-                        print("🎉 새로운 최고 점수입니다!")
-
-            elif choice == 2:
-                add_quiz(quizzes)
-            elif choice == 3:
-                list_quizzes(quizzes)
-            elif choice == 4:
-                show_best_score(best_score)
-            elif choice == 5:
-                print("게임을 종료합니다. 안녕히 가세요!")
-                break
-    except (KeyboardInterrupt, EOFError):        # Ctrl+C(KeyboardInterrupt) 또는 입력 끊김(EOFError)
-        print("\n\n입력이 중단되어 안전하게 종료합니다.")
+    game = QuizGame()                             # QuizGame 설계도로 게임 객체를 만든다
+    game.run()
 
 
 # 이 파일을 직접 실행했을 때만 main()을 호출한다

@@ -63,7 +63,6 @@ def create_default_quizzes():
     return quizzes    # 만든 퀴즈 리스트를 호출한 곳으로 돌려준다
 
 
-
 # 정해진 범위(low~high)의 정수를 올바르게 입력받을 때까지 반복해서 묻는 함수
 # prompt: 화면에 보여줄 문구 / low, high: 허용하는 최솟값, 최댓값  (매개변수)
 def read_int(prompt, low, high):
@@ -107,11 +106,6 @@ def main():
                 break
     except (KeyboardInterrupt, EOFError):        # Ctrl+C(KeyboardInterrupt) 또는 입력 끊김(EOFError)
         print("\n\n입력이 중단되어 안전하게 종료합니다.")
-
-
-# 이 파일을 직접 실행했을 때만 main()을 호출한다
-if __name__ == "__main__":
-    main()
 
 
 # 이 파일을 직접 실행했을 때만 main()을 호출한다

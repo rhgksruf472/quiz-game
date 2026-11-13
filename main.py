@@ -144,6 +144,19 @@ def add_quiz(quizzes):
     print("✅ 퀴즈가 추가되었습니다!")
 
 
+# 등록된 퀴즈의 문제를 번호와 함께 목록으로 보여주는 함수
+def list_quizzes(quizzes):
+    if len(quizzes) == 0:                        # 퀴즈가 없는 경우
+        print("⚠️ 등록된 퀴즈가 없습니다.")
+        return                                   # 값 없이 함수를 끝낸다
+
+    print(f"\n📋 등록된 퀴즈 목록 (총 {len(quizzes)}개)")
+    print("-" * 40)
+    for index, quiz in enumerate(quizzes, start=1):   # 번호는 1부터 센다
+        print(f"[{index}] {quiz.question}")
+    print("-" * 40)
+
+
 
 # 프로그램 전체 흐름을 담당하는 함수
 def main():
@@ -159,7 +172,7 @@ def main():
             elif choice == 2:
                 add_quiz(quizzes)
             elif choice == 3:
-                print("퀴즈 목록은 아직 준비 중입니다.")
+                list_quizzes(quizzes)
             elif choice == 4:
                 print("점수 확인은 아직 준비 중입니다.")
             elif choice == 5:

@@ -10,6 +10,24 @@ def show_menu():
     print("5. 종료")
     print("=" * 40)
 
+# 퀴즈 한 문제를 표현하는 클래스 (설계도)
+class Quiz:
+    # 객체가 만들어질 때 자동 실행된다. self는 만들어지는 객체 자신이다
+    def __init__(self, question, choices, answer):
+        self.question = question    # 속성: 문제 글
+        self.choices = choices      # 속성: 선택지 4개가 담긴 리스트
+        self.answer = answer        # 속성: 정답 번호 (1~4, 숫자)
+
+    # 문제와 선택지를 화면에 보여주는 메서드
+    def display(self):
+        print(self.question)
+        # enumerate: 리스트를 돌면서 번호를 같이 준다. start=1이라 1번부터 시작한다
+        for number, choice in enumerate(self.choices, start=1):
+            print(f"{number}. {choice}")
+
+    # 사용자가 고른 번호가 정답인지 확인하는 메서드. True/False를 돌려준다
+    def is_correct(self, user_answer):
+        return user_answer == self.answer
 
 # 정해진 범위(low~high)의 정수를 올바르게 입력받을 때까지 반복해서 묻는 함수
 # prompt: 화면에 보여줄 문구 / low, high: 허용하는 최솟값, 최댓값  (매개변수)

@@ -117,6 +117,33 @@ def play_quiz(quizzes):
     return score                                 # 점수를 돌려준다 (S7에서 최고 점수 비교에 쓴다)
 
 
+# 빈 입력을 막고, 글자를 올바르게 입력받을 때까지 반복해서 묻는 함수
+def read_text(prompt):
+    while True:
+        text = input(prompt).strip()             # 입력받고 앞뒤 공백을 지운다
+        if text == "":                           # 아무것도 안 쓰고 Enter만 친 경우
+            print("⚠️ 아무것도 입력하지 않았습니다. 다시 입력하세요.")
+            continue                             # 다시 묻는다
+        return text                              # 내용이 있으면 돌려준다
+
+
+# 사용자에게 문제, 선택지 4개, 정답 번호를 입력받아 퀴즈를 추가하는 함수
+def add_quiz(quizzes):
+    print("\n📌 새로운 퀴즈를 추가합니다.")
+    question = read_text("문제를 입력하세요: ")
+
+    choices = []                                 # 선택지를 담을 빈 리스트
+    for number in range(1, 5):                   # 1, 2, 3, 4를 차례로 돌며 4번 반복한다
+        choice = read_text(f"선택지 {number}: ")
+        choices.append(choice)                   # 리스트 끝에 선택지를 붙인다
+
+    answer = read_int("정답 번호 (1-4): ", 1, 4)  # 1~4 숫자만 받는다 (read_int 재사용)
+
+    new_quiz = Quiz(question, choices, answer)   # 입력받은 값으로 Quiz 객체를 만든다
+    quizzes.append(new_quiz)                     # 퀴즈 리스트 끝에 추가한다
+    print("✅ 퀴즈가 추가되었습니다!")
+
+
 
 # 프로그램 전체 흐름을 담당하는 함수
 def main():
@@ -130,7 +157,7 @@ def main():
             if choice == 1:                      # 숫자이므로 따옴표 없이 비교한다
                 play_quiz(quizzes)
             elif choice == 2:
-                print("퀴즈 추가는 아직 준비 중입니다.")
+                add_quiz(quizzes)
             elif choice == 3:
                 print("퀴즈 목록은 아직 준비 중입니다.")
             elif choice == 4:

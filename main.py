@@ -120,6 +120,48 @@ class QuizGame:
     def __init__(self):
         self.quizzes = create_default_quizzes()   # 속성: 퀴즈 목록
         self.best_score = None                    # 속성: 최고 점수 (아직 안 풀었으면 None)
+        self.load()                               # 실행할 때 저장 파일이 있으면 불러온다
+
+    # 파일에서 퀴즈와 최고 점수를 불러오는 메서드. 파일이 없거나 손상되면 기본 데이터를 쓴다
+    def load(self):
+        if not os.path.exists(STATE_FILE):        # 첫 실행: 저장 파일이 아직 없다 → 기본 데이터 그대로 사용
+            return
+
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:   # with: 다 쓰면 파일을 자동으로 닫아 준다
+                data = json.load(f)                              # JSON 글자를 파이썬 딕셔너리/리스트로 바꾼다
+            quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
+            best_score = data["best_score"]
+            if best_score is not None and (
+                not isinstance(best_score, int) or isinstance(best_score, bool) or best_score < 0 or best_score > 100
+            ):
+                raise ValueError("최고 점수가 올바르지 않습니다.")
+        except (OSError, ValueError, KeyError, TypeError):
+            # OSError: 파일을 못 읽음 / ValueError: JSON 형식 깨짐·값 이상(JSONDecodeError 포함)
+            # KeyError: 필요한 항목 없음 / TypeError: 데이터 모양이 다름
+            print("⚠️ 저장 파일이 손상되어 기본 데이터로 복구합니다.")
+            self.quizzes = create_default_quizzes()
+            self.best_score = None
+            self.save()                           # 깨끗한 파일로 덮어써서 복구한다
+            return
+
+        self.quizzes = quizzes
+        self.best_score = best_score
+        score_text = "없음" if best_score is None else f"{best_score}점"
+        print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(quizzes)}개, 최고점수 {score_text})")
+
+    # 퀴즈 목록과 최고 점수를 파일에 저장하는 메서드
+    def save(self):
+        data = {
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],   # Quiz 객체들을 딕셔너리 리스트로 바꾼다
+            "best_score": self.best_score,
+        }
+        try:
+            with open(STATE_FILE, "w", encoding="utf-8") as f:
+                # ensure_ascii=False: 한글을 \uXXXX가 아니라 그대로 저장 / indent=4: 사람이 보기 좋게 들여쓰기
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        except OSError:
+            print("⚠️ 저장 파일을 쓸 수 없습니다. 이번 변경은 파일에 남지 않습니다.")
 
     # 메뉴 화면을 보여주는 메서드
     def show_menu(self):
@@ -162,6 +204,7 @@ class QuizGame:
         if self.best_score is None or score > self.best_score:   # 최고 점수 비교·갱신
             self.best_score = score
             print("🎉 새로운 최고 점수입니다!")
+            self.save()                           # 최고 점수를 파일에 저장한다
 
     # 새 퀴즈를 입력받아 목록에 추가하는 메서드
     def add(self):
@@ -173,6 +216,7 @@ class QuizGame:
         answer = read_int("정답 번호 (1-4): ", 1, 4)
         self.quizzes.append(Quiz(question, choices, answer))
         print("✅ 퀴즈가 추가되었습니다!")
+        self.save()                               # 추가한 퀴즈를 파일에 저장한다
 
     # 퀴즈 목록을 보여주는 메서드
     def show_list(self):
@@ -210,9 +254,11 @@ class QuizGame:
                     self.show_score()
                 elif choice == 5:
                     print("게임을 종료합니다. 안녕히 가세요!")
+                    self.save()                   # 종료 전에 한 번 더 저장한다
                     break
         except (KeyboardInterrupt, EOFError):
             print("\n\n입력이 중단되어 안전하게 종료합니다.")
+            self.save()                               # 가능한 범위에서 저장하고 끝낸다
 
 
 # 프로그램의 시작점. 게임 객체를 만들어 실행한다

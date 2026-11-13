@@ -9,3 +9,6 @@ venv/
 # 개인 기록용 비공개 파일
 QnA.md
 requirements-checklist.md
+
+# 게임 실행 중 생기는 개인 플레이 기록 (퀴즈·최고 점수). 구조는 README에 설명
+state.json

@@ -1,3 +1,10 @@
+import json                       # JSON 파일을 읽고 쓰는 표준 라이브러리
+import os                         # 파일 경로를 다루는 표준 라이브러리
+
+# 데이터를 저장할 파일. main.py가 있는 폴더(프로젝트 루트)의 state.json이다
+STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state.json")
+
+
 # 퀴즈 한 문제를 표현하는 클래스 (설계도)
 class Quiz:
     # 객체가 만들어질 때 자동 실행된다. self는 만들어지는 객체 자신이다
@@ -16,6 +23,29 @@ class Quiz:
     # 사용자가 고른 번호가 정답인지 확인하는 메서드. True/False를 돌려준다
     def is_correct(self, user_answer):
         return user_answer == self.answer
+
+    # Quiz 객체를 파일에 쓸 수 있는 딕셔너리로 바꾸는 메서드
+    def to_dict(self):
+        return {
+            "question": self.question,
+            "choices": self.choices,
+            "answer": self.answer,
+        }
+
+    # 딕셔너리를 다시 Quiz 객체로 만드는 메서드. @staticmethod는 객체 없이 Quiz.from_dict(...)로 부르는 함수라는 표시다
+    # 파일 내용이 이상하면(문제 없음, 선택지 4개 아님, 정답이 1~4 아님) ValueError를 일으켜 손상으로 처리하게 한다
+    @staticmethod
+    def from_dict(data):
+        question = data["question"]
+        choices = data["choices"]
+        answer = data["answer"]
+        if not isinstance(question, str) or question.strip() == "":
+            raise ValueError("문제가 올바르지 않습니다.")
+        if not isinstance(choices, list) or len(choices) != 4 or not all(isinstance(c, str) for c in choices):
+            raise ValueError("선택지는 글자 4개여야 합니다.")
+        if not isinstance(answer, int) or isinstance(answer, bool) or answer < 1 or answer > 4:
+            raise ValueError("정답은 1~4 숫자여야 합니다.")
+        return Quiz(question, choices, answer)
 
 
 # 기본 퀴즈 데이터(영화 주제)를 만들어 리스트로 돌려주는 함수

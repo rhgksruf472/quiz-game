@@ -157,10 +157,19 @@ def list_quizzes(quizzes):
     print("-" * 40)
 
 
+# 최고 점수를 보여주는 함수. best_score가 None이면 아직 안 푼 것이다
+def show_best_score(best_score):
+    if best_score is None:                       # 한 번도 풀지 않은 경우
+        print("⚠️ 아직 퀴즈를 풀지 않았습니다.")
+    else:
+        print(f"\n🏆 최고 점수: {best_score}점")
+
+
 
 # 프로그램 전체 흐름을 담당하는 함수
 def main():
     quizzes = create_default_quizzes()   # 기본 퀴즈 리스트를 만들어 변수에 담아 둔다
+    best_score = None                            # 최고 점수를 저장할 변수
 
     try:                                         # Ctrl+C나 입력 끊김이 생겨도 이 안에서 처리한다
         while True:
@@ -168,13 +177,18 @@ def main():
             choice = read_int("선택: ", 1, 5)    # 이제 choice는 글자가 아니라 숫자(int)다
 
             if choice == 1:                      # 숫자이므로 따옴표 없이 비교한다
-                play_quiz(quizzes)
+                score = play_quiz(quizzes)           # 풀이 결과 점수를 받는다 (퀴즈가 없었으면 None)
+                if score is not None:                # 점수가 있을 때만 비교한다
+                    if best_score is None or score > best_score:   # 첫 점수이거나 최고 점수보다 높으면
+                        best_score = score           # 최고 점수를 갱신한다
+                        print("🎉 새로운 최고 점수입니다!")
+
             elif choice == 2:
                 add_quiz(quizzes)
             elif choice == 3:
                 list_quizzes(quizzes)
             elif choice == 4:
-                print("점수 확인은 아직 준비 중입니다.")
+                show_best_score(best_score)
             elif choice == 5:
                 print("게임을 종료합니다. 안녕히 가세요!")
                 break
